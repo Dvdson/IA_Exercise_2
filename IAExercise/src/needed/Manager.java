@@ -27,7 +27,7 @@ public class Manager {
 		
 	}
 	public boolean readRule(String str){
-		str.replaceAll(" ", "");
+		str = str.replaceAll(" ", "");
 		ArrayList<String> rule = new ArrayList<>();
 		if(str.contains("=.")){
 			int cont = 0;
