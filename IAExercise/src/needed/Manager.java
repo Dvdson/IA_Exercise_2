@@ -115,19 +115,31 @@ public class Manager {
 		ArrayList<String> nextOne = new ArrayList<>();
 		if(rule.size() > 1){
 			if(rule.get(0).equals("(")){
+				int parCont = 1;
 				ArrayList<String> aux;
 				int i;
-				for(i = 0; i < rule.size() && !rule.get(i).equals(")"); ++i);
-				aux = new ArrayList<>(rule.subList(1,i));
-				if(rule.get(i+1).equals("&")){
-					nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
-					return  LogcOperator(aux) && 
-							LogcOperator(nextOne);
+				for(i = 0; i < rule.size() && parCont > 0; ++i){
+					if(rule.get(i+1).equals(")")) --parCont;
+					if(rule.get(i+1).equals("(")) ++parCont;
 				}
-				if(rule.get(i+1).equals("|")){
-					nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
-					return  LogcOperator(aux) || 
-							LogcOperator(nextOne);
+				//needs to be exception.
+				if(parCont != 0) return false;
+				
+				if(i + 1 < rule.size()){
+					aux = new ArrayList<>(rule.subList(1,i));
+					if(rule.get(i+1).equals("&")){
+						nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
+						return  LogcOperator(aux) && 
+								LogcOperator(nextOne);
+					}
+					if(rule.get(i+1).equals("|")){
+						nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
+						return  LogcOperator(aux) || 
+								LogcOperator(nextOne);
+					}
+				}else{
+					aux = new ArrayList<>(rule.subList(1,i));
+					return LogcOperator(aux);
 				}
 			}
 			if(rule.get(1).equals("&")){

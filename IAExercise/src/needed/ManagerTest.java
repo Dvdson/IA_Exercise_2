@@ -26,8 +26,9 @@ public class ManagerTest {
 		
 		manager.readFact("Banana");
 		manager.readFact("Abacate");
-		
-		if(!manager.LogcOperator(auxArray)) fail("wrong");
+		boolean x =manager.LogcOperator(auxArray);
+		System.out.println(x);
+		if(!x) fail("wrong");
 		
 	}
 	
