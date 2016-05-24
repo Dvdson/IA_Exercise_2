@@ -14,6 +14,7 @@ public class Manager {
 	}
 
 	public boolean readFact(String str){
+		str = str.replaceAll(" ", "");
 		if( str.contains("=.")	||
 			str.contains("&") 	||
 			str.contains("|")	||
@@ -83,35 +84,23 @@ public class Manager {
 		return aux;
 	}
 
-	public int sameAssum(ArrayList<String> assum){
-		boolean canHave = true;
-		for(int i = 0; i < _rules.size(); ++i){
-			canHave = true;
-			int j;
-			for(j = 0;
-				j < _rules.get(i).size() && canHave && !_rules.get(i).get(j).equals("=.");
-				++j
-			){
-				if(!_rules.get(i).get(j).equals(assum)){
-					canHave=!canHave;
-				}
-			}
-			if(j < _rules.get(i).size() && canHave && !_rules.get(i).get(j).equals("=."))
-				return i;
-		}
-		return -1;
+	public int infe(ArrayList<String> rule){
+		int i;
+		for(i = 0; i+1 < rule.size() && !rule.get(i).equals("=."); ++i);
+		if(i+1 >= rule.size()) return -1;
+		return i;
 		
 	}
-	public int sameProp(String prop){
-		for(int i = 0; i < _rules.size() ; ++i){
-			if(_rules.get(_rules.size()-1).equals(prop)){
-				return i;
-			}
+	
+	
+	
+	public boolean LogcOperator(ArrayList<String> theRule){
+		boolean neg = false;
+		ArrayList<String> rule = new ArrayList<>(theRule);
+		if(rule.get(0).startsWith("-")){
+			neg = !neg;
+			rule.set(0, neg(rule.get(0)));
 		}
-		return -1;
-	}
-
-	public boolean LogcOperator(ArrayList<String> rule){
 		ArrayList<String> nextOne = new ArrayList<>();
 		if(rule.size() > 1){
 			if(rule.get(0).equals("(")){
@@ -129,36 +118,36 @@ public class Manager {
 					aux = new ArrayList<>(rule.subList(1,i));
 					if(rule.get(i+1).equals("&")){
 						nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
-						return  LogcOperator(aux) && 
+						return  LogcOperator(aux) ^ neg && 
 								LogcOperator(nextOne);
 					}
 					if(rule.get(i+1).equals("|")){
 						nextOne = new ArrayList<>(rule.subList(i+2, rule.size())) ;
-						return  LogcOperator(aux) || 
+						return  LogcOperator(aux) ^ neg || 
 								LogcOperator(nextOne);
 					}
 				}else{
 					aux = new ArrayList<>(rule.subList(1,i));
-					return LogcOperator(aux);
+					return LogcOperator(aux) ^ neg;
 				}
 			}
 			if(rule.get(1).equals("&")){
 				String aux = rule.get(0);
 				nextOne = new ArrayList<>(rule.subList(2, rule.size())) ;
-				return  isFact(aux) && 
+				return  isFact(aux) ^ neg && 
 						LogcOperator(nextOne);
 			}
 			if(rule.get(1).equals("|")){
 				String aux = rule.get(0);
 				nextOne = new ArrayList<>(rule.subList(2, rule.size())) ;
-				return  !(!isFact(aux) &&
+				return  !(!isFact(aux) ^ neg &&
 						!LogcOperator(nextOne));
 			}
 			if(rule.get(1).equals("=.")){
-				return isFact(rule.get(0));
+				return isFact(rule.get(0)) ^ neg;
 			}
 		}
-		if(rule.size() == 1) return isFact(rule.get(0));
+		if(rule.size() == 1) return isFact(rule.get(0)) ^ neg;
 		return false;
 	}
 	public boolean modusPonens(ArrayList<String> rule){
@@ -180,6 +169,11 @@ public class Manager {
 		}
 	}
 	
+	public boolean ruleContains(String str, int rule){
+		for(int i = 0; i < _rules.get(rule).size(); ++i)
+			if(!_rules.get(rule).get(i).equals(str)) return true;
+		return false;
+	}
 	public boolean isNeg(String a){
 		return a.startsWith("-");
 	}

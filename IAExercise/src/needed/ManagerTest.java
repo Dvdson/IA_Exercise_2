@@ -20,7 +20,7 @@ public class ManagerTest {
 		auxArray.add("&");
 		auxArray.add("vitamina");
 		auxArray.add("|");
-		auxArray.add("(");
+		auxArray.add("-(");
 		auxArray.add("Abacate");
 		auxArray.add(")");
 		
@@ -28,7 +28,7 @@ public class ManagerTest {
 		manager.readFact("Abacate");
 		boolean x =manager.LogcOperator(auxArray);
 		System.out.println(x);
-		if(!x) fail("wrong");
+		if(x) fail("wrong");
 		
 	}
 	
