@@ -1,6 +1,7 @@
 package needed;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Manager {
 	
@@ -92,7 +93,32 @@ public class Manager {
 		
 	}
 	
-	
+	public boolean backWChain(ArrayList<String> elInOrder){
+
+		if(isFact(elInOrder.get(0)))
+			return true;
+		if(isFact(neg(elInOrder.get(0))))
+			return false;
+		
+		for (int i = 0; i < _rules.size(); i++) {
+			int infe = 0;
+			ArrayList<Integer> element = new ArrayList<>();
+			ArrayList<Integer> negElement = new ArrayList<>();
+			
+			for (int j = 0; j < _rules.get(i).size(); j++) {
+				if(_rules.get(i).get(j).equals("=.")) infe = j;
+				if(_rules.get(i).get(j).equals(elInOrder.get(0))) element.add(j);
+				if(_rules.get(i).get(j).equals(neg(elInOrder.get(0)))) negElement.add(j);	
+			}
+			
+			
+			
+		}
+		
+		
+		
+		return false;
+	}
 	
 	public boolean LogcOperator(ArrayList<String> theRule){
 		boolean neg = false;
