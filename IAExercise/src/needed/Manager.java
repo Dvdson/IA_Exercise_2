@@ -32,8 +32,23 @@ public class Manager {
 		ArrayList<String> rule = new ArrayList<>();
 		if(str.contains("=.")){
 			int cont = 0;
-			while(!str.isEmpty()){	
-				rule.add(takeEl(str));
+			while(!str.isEmpty()){
+				String element = takeEl(str);
+				
+				while(element.equals("(")){
+					
+					int i = 1, j = 0;
+					while(i > 0 && j < str.length()){
+						if(str.startsWith("(", j)) ++i;
+						if(str.startsWith((")"), j))--i;
+						 ++j;
+					}
+					if(j >= str.length()) return false;
+					str = str.substring(0,j) + str.substring(j+1);
+					element = takeEl(str);
+				}
+				
+				rule.add(element);
 				if(rule.get(cont) == "Theres is a error")
 					return false;
 				str = str.substring(rule.get(cont).length(),str.length());
@@ -99,47 +114,103 @@ public class Manager {
 		if(isFact(neg(element)))
 			return false;
 
-
 		for (int i = 0; i < _rules.size(); i++) {		
-			int infe = -1;
-			int position = -1;
-			for (int j = 0; j < _rules.get(i).size(); j++) {
-				if(!notShowRule.contains(i)) {
-					if(_rules.get(i).get(j).equals("=.")) infe = j;
-					if(_rules.get(i).get(j).equals(element)&& position==-1) position = j;
-					if(_rules.get(i).get(j).equals(neg(element))&& position==-1) position = j;
+			
+			if(!notShowRule.contains(i)) {
+				int infe = -1;
+				int position = -1;
+				ArrayList<String> rule = new ArrayList<>(_rules.get(i));
+				
+				for (int j = 0; j < rule.size(); j++) {
+				
+					if(rule.get(j).equals("=.")) infe = j;
+					if(rule.get(j).equals(element)&& position==-1) position = j;
+					if(rule.get(j).equals(neg(element))&& position==-1) position = j;
 				}
-			}
-			if(position != -1){
-
-				boolean b = true;
-				ArrayList<Integer> list = new ArrayList<>();
-				list.add(i);
-
-				if(position < infe) {
-					//TODO
-				}
-				else if(position > infe) {
-
-					for(int j = 0; j < infe; j++) {
-						if(isVar(_rules.get(i).get(j))) {
-							b = b & backWChain(_rules.get(i).get(j), list);
-							//TODO add if 
+				if(position != -1){
+	
+					boolean b = true;
+					ArrayList<Integer> list = new ArrayList<>(notShowRule);
+					ArrayList<String> aux = new ArrayList<String>(rule.subList(0,infe));
+					list.add(i);
+					String S;
+					aux.add(neg(rule.get(infe+1)));
+					rule = new ArrayList<String>(rule.subList(0, infe));
+					
+					
+					if(position < infe) {
+						Integer par = parenEntry(rule, position);
+						
+						if(par%2 == 0){
+							S=neg(element);
+						}else{
+							S=element;
+						}
+						
+						for(int k = 0 ;k <= par; k++){
+							int parIn = rule.indexOf("-(");
+							int parOut = rule.lastIndexOf(")");
+							
+							if(k%2 == 0){
+								for(int j = 0, parCont = 0; j < rule.size();++j){
+									if(rule.get(j).equals("-(")) ++parCont;
+									if(rule.get(j).equals(")")) --parCont;
+									
+									if(parCont == 0 && !rule.get(j).equals(element)){
+										if(isVar(rule.get(j))){
+											aux.add(rule.get(j));
+										}
+									}
+									
+								}
+							}
+							
+							rule = new ArrayList<String>(rule.subList(parIn + 1, parOut));
+						}
+						
+						
+					}else{
+						aux.addAll(rule);
+						S=element;
+					}
+					
+					
+					for(int j = 0; j < aux.size(); j++) {
+						if(isVar(aux.get(j))) {
+							boolean C = backWChain(aux.get(j), list);
+							b = b & C;
+							if(C)readFact(aux.get(j)); 
 						}
 					}
+					
+					return b;
 				}
-
-				return b;
 			}
 		}
 
 		return false;
 	}
 
+	public int parenEntry(ArrayList<String> rule, int pos){
+		int cont = 0;
+		while(pos > 0){
+			
+			if(rule.get(pos).equals("-(")){
+				++cont;
+			}else if(rule.get(pos).equals(")")){
+				--cont;
+			}
+			--pos;
+		}
+		
+		return cont;
+	}
+	
 	public boolean isVar(String string) {
 
 		if(string.equals("=.")) return false;
 		if(string.equals("&")) return false;
+		if(string.equals("|")) return false;
 		return true;
 	}
 
