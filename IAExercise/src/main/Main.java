@@ -1,5 +1,6 @@
 package main;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import needed.Manager;
@@ -10,7 +11,7 @@ public class Main {
 		Manager manager = new Manager();
 		String entry;
 		Scanner input = new Scanner(System.in);
-		
+
 		System.out.println("Por favor, entre com as regras");
 		System.out.println("Para terminar entre com \"END\"");
 		entry = input.nextLine();
@@ -20,7 +21,7 @@ public class Main {
 			System.out.println("Para terminar entre com \"END\"");
 			entry = input.nextLine();
 		}
-		
+
 		System.out.println("Por favor, entre com os fatos");
 		System.out.println("Para terminar entre com \"END\"");
 		entry = input.nextLine();
@@ -30,9 +31,11 @@ public class Main {
 			System.out.println("Para terminar entre com \"END\"");
 			entry = input.nextLine();
 		}
-		
-		
 
+		System.out.println("Por favor, entre com a conclusão");
+		entry = input.nextLine();
+		manager.backWChain(entry, new ArrayList<Integer>());
+
+		input.close();
 	}
-
 }

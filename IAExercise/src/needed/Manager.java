@@ -1,13 +1,12 @@
 package needed;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class Manager {
-	
+
 	protected ArrayList<String> _facts;
 	protected ArrayList<ArrayList<String>> _rules;
-	
+
 	public Manager() {
 		super();
 		_facts = new ArrayList<>();
@@ -17,16 +16,16 @@ public class Manager {
 	public boolean readFact(String str){
 		str = str.replaceAll(" ", "");
 		if( str.contains("=.")	||
-			str.contains("&") 	||
-			str.contains("|")	||
-			str.contains("(")	||
-			str.contains(")")
-		){
+				str.contains("&") 	||
+				str.contains("|")	||
+				str.contains("(")	||
+				str.contains(")")
+				){
 			return false;
 		}
 		_facts.add(str);
 		return true;
-		
+
 	}
 	public boolean readRule(String str){
 		str = str.replaceAll(" ", "");
@@ -41,21 +40,21 @@ public class Manager {
 				++cont;
 			}
 		}else return false;
-		
+
 		_rules.add(rule);
 		return true;
 	}
-	
+
 	public String takeEl(String sentence){
 		String aux;
 		if(sentence.startsWith("=.")){
 			aux = sentence.substring(0,2);
 			return aux;
-			
+
 		}else if(sentence.startsWith("&") || sentence.startsWith("|")){
 			aux = sentence.substring(0,1);
 			return aux;
-			
+
 		}else if(sentence.startsWith("(",0)){
 			aux = sentence.substring(0,1);
 			return aux;
@@ -90,36 +89,60 @@ public class Manager {
 		for(i = 0; i+1 < rule.size() && !rule.get(i).equals("=."); ++i);
 		if(i+1 >= rule.size()) return -1;
 		return i;
-		
-	}
-	
-	public boolean backWChain(ArrayList<String> elInOrder){
 
-		if(isFact(elInOrder.get(0)))
+	}
+
+	public boolean backWChain(String element, ArrayList<Integer> notShowRule) {
+
+		if(isFact(element))
 			return true;
-		if(isFact(neg(elInOrder.get(0))))
+		if(isFact(neg(element)))
 			return false;
-		
-		for (int i = 0; i < _rules.size(); i++) {
-			int infe = 0;
-			ArrayList<Integer> element = new ArrayList<>();
-			ArrayList<Integer> negElement = new ArrayList<>();
-			
+
+
+		for (int i = 0; i < _rules.size(); i++) {		
+			int infe = -1;
+			int position = -1;
 			for (int j = 0; j < _rules.get(i).size(); j++) {
-				if(_rules.get(i).get(j).equals("=.")) infe = j;
-				if(_rules.get(i).get(j).equals(elInOrder.get(0))) element.add(j);
-				if(_rules.get(i).get(j).equals(neg(elInOrder.get(0)))) negElement.add(j);	
+				if(!notShowRule.contains(i)) {
+					if(_rules.get(i).get(j).equals("=.")) infe = j;
+					if(_rules.get(i).get(j).equals(element)&& position==-1) position = j;
+					if(_rules.get(i).get(j).equals(neg(element))&& position==-1) position = j;
+				}
 			}
-			
-			
-			
+			if(position != -1){
+
+				boolean b = true;
+				ArrayList<Integer> list = new ArrayList<>();
+				list.add(i);
+
+				if(position < infe) {
+					//TODO
+				}
+				else if(position > infe) {
+
+					for(int j = 0; j < infe; j++) {
+						if(isVar(_rules.get(i).get(j))) {
+							b = b & backWChain(_rules.get(i).get(j), list);
+							//TODO add if 
+						}
+					}
+				}
+
+				return b;
+			}
 		}
-		
-		
-		
+
 		return false;
 	}
-	
+
+	public boolean isVar(String string) {
+
+		if(string.equals("=.")) return false;
+		if(string.equals("&")) return false;
+		return true;
+	}
+
 	public boolean LogcOperator(ArrayList<String> theRule){
 		boolean neg = false;
 		ArrayList<String> rule = new ArrayList<>(theRule);
@@ -139,7 +162,7 @@ public class Manager {
 				}
 				//needs to be exception.
 				if(parCont != 0) return false;
-				
+
 				if(i + 1 < rule.size()){
 					aux = new ArrayList<>(rule.subList(1,i));
 					if(rule.get(i+1).equals("&")){
@@ -194,7 +217,7 @@ public class Manager {
 			return false;
 		}
 	}
-	
+
 	public boolean ruleContains(String str, int rule){
 		for(int i = 0; i < _rules.get(rule).size(); ++i)
 			if(!_rules.get(rule).get(i).equals(str)) return true;
@@ -213,7 +236,4 @@ public class Manager {
 		}
 		return false;
 	}
-//	public int ShootRule() {
-//		
-//	}
 }
