@@ -16,11 +16,12 @@ public class Manager {
 	public boolean readFact(String str){
 		str = str.replaceAll(" ", "");
 		if( str.contains("=.")	||
-				str.contains("&") 	||
-				str.contains("|")	||
-				str.contains("(")	||
-				str.contains(")")
-				){
+			str.contains("&") 	||
+			str.contains("|")	||
+			str.contains("(")	||
+			str.contains(")")	||
+			_facts.contains(str)
+		){
 			return false;
 		}
 		_facts.add(str);
@@ -34,20 +35,6 @@ public class Manager {
 			int cont = 0;
 			while(!str.isEmpty()){
 				String element = takeEl(str);
-				
-				while(element.equals("(")){
-					
-					int i = 1, j = 0;
-					while(i > 0 && j < str.length()){
-						if(str.startsWith("(", j)) ++i;
-						if(str.startsWith((")"), j))--i;
-						 ++j;
-					}
-					if(j >= str.length()) return false;
-					str = str.substring(0,j) + str.substring(j+1);
-					element = takeEl(str);
-				}
-				
 				rule.add(element);
 				if(rule.get(cont) == "Theres is a error")
 					return false;
@@ -70,6 +57,9 @@ public class Manager {
 			aux = sentence.substring(0,1);
 			return aux;
 
+		}else if(sentence.startsWith("-(",0)){
+			aux = sentence.substring(0,2);
+			return aux;
 		}else if(sentence.startsWith("(",0)){
 			aux = sentence.substring(0,1);
 			return aux;
@@ -109,42 +99,41 @@ public class Manager {
 
 	public boolean backWChain(String element, ArrayList<Integer> notShowRule) {
 
-		if(isFact(element))
-			return true;
-		if(isFact(neg(element)))
-			return false;
+		if(isFact(element)) return true;
+		if(isFact(neg(element))) return false;
+		boolean neg = false;
 
 		for (int i = 0; i < _rules.size(); i++) {		
 			
 			if(!notShowRule.contains(i)) {
 				int infe = -1;
 				int position = -1;
-				ArrayList<String> rule = new ArrayList<>(_rules.get(i));
+				ArrayList<String> rule = withoutPar(_rules.get(i));
 				
 				for (int j = 0; j < rule.size(); j++) {
 				
 					if(rule.get(j).equals("=.")) infe = j;
 					if(rule.get(j).equals(element)&& position==-1) position = j;
-					if(rule.get(j).equals(neg(element))&& position==-1) position = j;
+					if(rule.get(j).equals(neg(element))&& position==-1){
+						position = j;
+						neg = !neg;
+					}
 				}
 				if(position != -1){
 	
 					boolean b = true;
 					ArrayList<Integer> list = new ArrayList<>(notShowRule);
-					ArrayList<String> aux = new ArrayList<String>(rule.subList(0,infe));
+					ArrayList<String> aux = new ArrayList<String>();
 					list.add(i);
-					String S;
-					aux.add(neg(rule.get(infe+1)));
+					String S = rule.get(infe+1);
 					rule = new ArrayList<String>(rule.subList(0, infe));
 					
 					
 					if(position < infe) {
+						aux.add(neg(S));
 						Integer par = parenEntry(rule, position);
-						
 						if(par%2 == 0){
-							S=neg(element);
-						}else{
-							S=element;
+							neg = !neg;
 						}
 						
 						for(int k = 0 ;k <= par; k++){
@@ -154,26 +143,27 @@ public class Manager {
 							if(k%2 == 0){
 								for(int j = 0, parCont = 0; j < rule.size();++j){
 									if(rule.get(j).equals("-(")) ++parCont;
-									if(rule.get(j).equals(")")) --parCont;
 									
-									if(parCont == 0 && !rule.get(j).equals(element)){
-										if(isVar(rule.get(j))){
-											aux.add(rule.get(j));
+									if(parCont == 0 && !rule.get(j).equals(element) && !rule.get(j).equals(neg(element))){
+										String str = rule.get(j);
+										if(isVar(str)){
+											aux.add(str);
 										}
-									}
+									}	
 									
+									if(rule.get(j).equals(")")) --parCont;
 								}
+								if(parIn > 0 && parIn<parOut)
+									rule = new ArrayList<String>(rule.subList(parIn + 1, parOut));
 							}
 							
-							rule = new ArrayList<String>(rule.subList(parIn + 1, parOut));
+							
 						}
 						
 						
 					}else{
 						aux.addAll(rule);
-						S=element;
-					}
-					
+					}				
 					
 					for(int j = 0; j < aux.size(); j++) {
 						if(isVar(aux.get(j))) {
@@ -182,7 +172,7 @@ public class Manager {
 							if(C)readFact(aux.get(j)); 
 						}
 					}
-					
+					b = b ^ neg;
 					return b;
 				}
 			}
@@ -289,6 +279,28 @@ public class Manager {
 		}
 	}
 
+	ArrayList<String> withoutPar(ArrayList<String> conj){
+		
+		ArrayList<String> send = new ArrayList<>(conj);	
+		int parIn = send.indexOf("(");
+		while(parIn >= 0){
+			
+			int i = 1, j = parIn+1;
+			while(i > 0 && j < send.size()){
+				if(send.get(j).equals("(")) ++i;
+				if(send.get(j).equals("-(")) ++i;
+				if(send.get(j).equals(")"))--i;
+				 ++j;
+			}
+			if(j >= send.size() && i > 0) return null;
+			
+			send.remove(parIn);
+			send.remove(j-2);
+			parIn = send.indexOf("(");
+		}
+		return send;
+	}
+	
 	public boolean ruleContains(String str, int rule){
 		for(int i = 0; i < _rules.get(rule).size(); ++i)
 			if(!_rules.get(rule).get(i).equals(str)) return true;

@@ -9,28 +9,100 @@ import org.junit.Test;
 public class ManagerTest {
 
 	@Test
-	public void testManager(){
+	public void testBackWardChain1(){
 		Manager manager = new Manager();
-		ArrayList<String> auxArray = new ArrayList<>();
-		auxArray.add("(");
-		auxArray.add("Abacate");
-		auxArray.add("|");
-		auxArray.add("Banana");
-		auxArray.add(")");
-		auxArray.add("&");
-		auxArray.add("vitamina");
-		auxArray.add("|");
-		auxArray.add("-(");
-		auxArray.add("Abacate");
-		auxArray.add(")");
-		
+		String str = "(Abacate&Banana)&vitamina=.Cebola";
 		manager.readFact("Banana");
 		manager.readFact("Abacate");
-		boolean x =manager.LogcOperator(auxArray);
-		System.out.println(x);
-		if(x) fail("wrong");
+		manager.readFact("vitamina");
+		manager.readRule(str);
+		
+		if(!manager.backWChain("Cebola", new ArrayList<Integer>())) fail("Just fail me");
 		
 	}
+	@Test
+	public void testBackWardChain2(){
+		Manager manager = new Manager();
+		String str = "(Abacate&Banana)&-vitamina=.Cebola";
+		manager.readFact("Banana");
+		manager.readFact("Abacate");
+		manager.readFact("vitamina");
+		manager.readRule(str);
+		
+		if(manager.backWChain("Cebola", new ArrayList<Integer>())) fail("Just fail me");
+		
+	}
+	@Test
+	public void testBackWardChain3(){
+		Manager manager = new Manager();
+		manager.readFact("Banana");
+		manager.readFact("Abacate");
+		manager.readRule("vitamina=.Cebola");
+		manager.readRule("Abacate&Banana=.vitamina");
+		
+		if(!manager.backWChain("Cebola", new ArrayList<Integer>())) fail("Just fail me");
+		
+	}
+	@Test
+	public void testBackWardChain4(){
+		Manager manager = new Manager();
+		String str = "(Abacate&Banana)&Cebola=.vitamina";
+		manager.readFact("Banana");
+		manager.readFact("Abacate");
+		manager.readFact("-vitamina");
+		manager.readRule(str);
+		
+		if(!manager.backWChain("-Cebola", new ArrayList<Integer>())) fail("Just fail me");
+		
+	}
+	@Test
+	public void testBackWardChain5(){
+		Manager manager = new Manager();
+		String str = "(Abacate&Banana)&-(Cebola)=.vitamina";
+		manager.readFact("Banana");
+		manager.readFact("Abacate");
+		manager.readFact("-vitamina");
+		manager.readRule(str);
+		
+		if(manager.backWChain("-Cebola", new ArrayList<Integer>())) fail("Just fail me");
+		
+	}
+	@Test
+	public void testBackWardChain6(){
+		Manager manager = new Manager();
+		String str = "(Abacate)&-(Cebola&Banana)=.vitamina";
+		manager.readFact("-Banana");
+		manager.readFact("Abacate");
+		manager.readFact("-vitamina");
+		manager.readRule(str);
+		
+		if(manager.backWChain("-Cebola", new ArrayList<Integer>())) fail("Just fail me");
+		
+	}
+
+//	@Test
+//	public void testLogicOperator(){
+//		Manager manager = new Manager();
+//		ArrayList<String> auxArray = new ArrayList<>();
+//		auxArray.add("(");
+//		auxArray.add("Abacate");
+//		auxArray.add("&");
+//		auxArray.add("Banana");
+//		auxArray.add(")");
+//		auxArray.add("&");
+//		auxArray.add("vitamina");
+//		auxArray.add("&");
+//		auxArray.add("-(");
+//		auxArray.add("Abacate");
+//		auxArray.add(")");
+//		
+//		manager.readFact("Banana");
+//		manager.readFact("Abacate");
+//		boolean x =manager.LogcOperator(auxArray);
+//		System.out.println(x);
+//		if(x) fail("wrong");
+//		
+//	}
 	
 	@Test
 	public void testReadFact(){
@@ -57,15 +129,17 @@ public class ManagerTest {
 	@Test
 	public void testReadRule() {
 		Manager manager = new Manager();
-		String str = "Abacate|Banana&Cebola=.vitamina";
+		String str = "(Abacate&Banana)&vitamina=.Cebola";
 		ArrayList<String> auxArray = new ArrayList<>();
+		auxArray.add("(");
 		auxArray.add("Abacate");
-		auxArray.add("|");
-		auxArray.add("Banana");
 		auxArray.add("&");
-		auxArray.add("Cebola");
-		auxArray.add("=.");
+		auxArray.add("Banana");
+		auxArray.add(")");
+		auxArray.add("&");
 		auxArray.add("vitamina");
+		auxArray.add("=.");
+		auxArray.add("Cebola");
 		
 		if(!manager.readRule(str)) {fail("Could not read the rule");}
 		
